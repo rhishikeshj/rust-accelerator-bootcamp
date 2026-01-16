@@ -1,0 +1,23 @@
+alias cl := clean
+alias cp := clippy
+alias c  := check
+alias f  := fmt
+alias t  := test
+
+default:
+    just --list
+
+clean:
+    cargo clean
+
+fmt:
+    cargo fmt --check
+
+clippy:
+    cargo clippy --all-targets -- -D warnings
+
+check: fmt clippy test
+
+test:
+    cargo nextest run
+
