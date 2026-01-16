@@ -1,8 +1,9 @@
-use axum::{response::IntoResponse, routing::post, serve::Serve, Router};
-use reqwest::StatusCode;
+use axum::{routing::post, serve::Serve, Router};
 use std::error::Error;
 use tokio::net::TcpListener;
 use tower_http::services::ServeDir;
+
+pub mod routes;
 
 // This struct encapsulates our application-related logic.
 pub struct Application {
@@ -17,11 +18,11 @@ impl Application {
         let assets_dir = ServeDir::new("assets");
         let router = Router::new()
             .fallback_service(assets_dir)
-            .route("/signup", post(signup_handler))
-            .route("/login", post(login_handler))
-            .route("/logout", post(logout_handler))
-            .route("/verify-2fa", post(verify_2fa_handler))
-            .route("/verify-token", post(verify_token_handler));
+            .route("/signup", post(routes::signup_handler))
+            .route("/login", post(routes::login_handler))
+            .route("/logout", post(routes::logout_handler))
+            .route("/verify-2fa", post(routes::verify_2fa_handler))
+            .route("/verify-token", post(routes::verify_token_handler));
 
         let listener = tokio::net::TcpListener::bind(address).await?;
         let address = listener.local_addr()?.to_string();
@@ -35,24 +36,4 @@ impl Application {
         println!("listening on {}", &self.address);
         self.server.await
     }
-}
-
-async fn signup_handler() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-async fn login_handler() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-async fn logout_handler() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-async fn verify_2fa_handler() -> impl IntoResponse {
-    StatusCode::OK.into_response()
-}
-
-async fn verify_token_handler() -> impl IntoResponse {
-    StatusCode::OK.into_response()
 }
