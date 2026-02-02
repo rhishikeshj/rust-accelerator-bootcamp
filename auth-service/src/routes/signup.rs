@@ -37,7 +37,7 @@ pub async fn signup_handler(
         .try_into()
         .map_err(|_e| AuthAPIError::InvalidCredentials)?;
 
-    user_store.add_user(user).map_err(|e| match e {
+    user_store.add_user(user).await.map_err(|e| match e {
         crate::services::UserStoreError::UserAlreadyExists => AuthAPIError::UserAlreadyExists,
         crate::services::UserStoreError::UserNotFound
         | crate::services::UserStoreError::InvalidCredentials

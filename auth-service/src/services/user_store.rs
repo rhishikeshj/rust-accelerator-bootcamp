@@ -8,8 +8,9 @@ pub enum UserStoreError {
     UnexpectedError,
 }
 
+#[async_trait::async_trait]
 pub trait UserStore: Send + Sync {
-    fn add_user(&mut self, user: User) -> Result<(), UserStoreError>;
-    fn get_user(&self, email: &str) -> Result<User, UserStoreError>;
-    fn validate_user(&self, email: &str, password: &str) -> Result<(), UserStoreError>;
+    async fn add_user(&mut self, user: User) -> Result<(), UserStoreError>;
+    async fn get_user(&self, email: &str) -> Result<User, UserStoreError>;
+    async fn validate_user(&self, email: &str, password: &str) -> Result<(), UserStoreError>;
 }
