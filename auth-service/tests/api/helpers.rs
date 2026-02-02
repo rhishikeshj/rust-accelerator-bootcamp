@@ -89,3 +89,7 @@ impl TestApp {
 pub fn get_random_email() -> String {
     format!("{}@example.com", Uuid::new_v4())
 }
+
+pub fn get_badly_formatted_email() -> String {
+    format!("{}-example.com", Uuid::new_v4())
+}

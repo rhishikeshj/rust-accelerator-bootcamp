@@ -2,7 +2,10 @@ use axum::{extract::State, Json};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{app_state::AppState, domain::User};
+use crate::{
+    app_state::AppState,
+    domain::{AuthAPIError, User, UserInfoError},
+};
 
 #[derive(Deserialize)]
 pub struct SignupRequest {
@@ -12,8 +15,10 @@ pub struct SignupRequest {
     pub requires_2fa: bool,
 }
 
-impl From<SignupRequest> for User {
-    fn from(value: SignupRequest) -> Self {
+impl TryFrom<SignupRequest> for User {
+    type Error = UserInfoError;
+
+    fn try_from(value: SignupRequest) -> Result<User, Self::Error> {
         Self::new(&value.email, &value.password, value.requires_2fa)
     }
 }
@@ -26,13 +31,17 @@ pub struct SignupResponse {
 pub async fn signup_handler(
     State(state): State<AppState>,
     Json(info): Json<SignupRequest>,
-) -> Result<(StatusCode, Json<SignupResponse>), (StatusCode, String)> {
+) -> Result<(StatusCode, Json<SignupResponse>), AuthAPIError> {
     let mut user_store = state.user_store.write().await;
-    user_store.add_user(info.into()).map_err(|_e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            String::from("Something went wrong!"),
-        )
+    let user: User = info
+        .try_into()
+        .map_err(|_e| AuthAPIError::InvalidCredentials)?;
+
+    user_store.add_user(user).map_err(|e| match e {
+        crate::services::UserStoreError::UserAlreadyExists => AuthAPIError::UserAlreadyExists,
+        crate::services::UserStoreError::UserNotFound
+        | crate::services::UserStoreError::InvalidCredentials
+        | crate::services::UserStoreError::UnexpectedError => AuthAPIError::UnexpectedError,
     })?;
 
     Ok((

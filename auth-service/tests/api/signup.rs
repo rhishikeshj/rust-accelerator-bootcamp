@@ -1,4 +1,4 @@
-use auth_service::routes::SignupResponse;
+use auth_service::{routes::SignupResponse, ErrorResponse};
 
 use crate::helpers::{self, TestApp};
 
@@ -53,5 +53,74 @@ async fn should_return_201_on_signup_success() {
             .await
             .expect("Could not deserialize response body to UserBody"),
         expected_response
+    );
+}
+
+#[tokio::test]
+async fn signup_should_return_400_on_invalid_input() {
+    let app = TestApp::new().await;
+
+    let random_email = helpers::get_badly_formatted_email();
+
+    let test_case = serde_json::json!({
+        "email": random_email,
+        "password": "password123",
+        "requires2FA": true
+    });
+
+    let response = app.post_signup(&test_case).await;
+    assert_eq!(
+        response.status().as_u16(),
+        400,
+        "Failed for input: {:?}",
+        test_case
+    );
+
+    // Assert that we are getting the correct response body!
+    assert_eq!(
+        response
+            .json::<ErrorResponse>()
+            .await
+            .expect("Could not deserialize response body to UserBody")
+            .error,
+        "Invalid credentials".to_owned()
+    );
+}
+
+#[tokio::test]
+async fn should_return_409_if_email_already_exists() {
+    let app = TestApp::new().await;
+
+    let random_email = helpers::get_random_email();
+
+    let test_case = serde_json::json!({
+        "email": random_email,
+        "password": "password123",
+        "requires2FA": true
+    });
+
+    let response = app.post_signup(&test_case).await;
+    assert_eq!(
+        response.status().as_u16(),
+        201,
+        "Failed for input: {:?}",
+        test_case
+    );
+
+    let response = app.post_signup(&test_case).await;
+    assert_eq!(
+        response.status().as_u16(),
+        409,
+        "Failed for input: {:?}",
+        test_case
+    );
+
+    assert_eq!(
+        response
+            .json::<ErrorResponse>()
+            .await
+            .expect("Could not deserialize response body to ErrorResponse")
+            .error,
+        "User already exists".to_owned()
     );
 }
