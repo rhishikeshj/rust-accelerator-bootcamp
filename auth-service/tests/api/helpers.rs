@@ -1,5 +1,8 @@
 use auth_service::{
-    app_state::AppState, services::HashMapUserStore, utils::constants::test, Application,
+    app_state::AppState,
+    services::{BannedTokenStore, HashMapUserStore, HashsetBannedTokenStore},
+    utils::constants::test,
+    Application,
 };
 use reqwest::cookie::Jar;
 use std::sync::Arc;
@@ -10,12 +13,17 @@ pub struct TestApp {
     pub address: String,
     pub http_client: reqwest::Client,
     pub cookies: Arc<Jar>,
+    pub banned_token_store: Arc<RwLock<dyn BannedTokenStore>>,
 }
 
 impl TestApp {
     pub async fn new() -> Self {
         let user_store = HashMapUserStore::default();
-        let app_state = AppState::new(Arc::new(RwLock::new(user_store)));
+        let banned_token_store = Arc::new(RwLock::new(HashsetBannedTokenStore::default()));
+        let app_state = AppState::new(
+            Arc::new(RwLock::new(user_store)),
+            banned_token_store.clone(),
+        );
 
         let app = Application::build(app_state, test::APP_ADDRESS)
             .await
@@ -39,6 +47,7 @@ impl TestApp {
             cookies,
             address,
             http_client,
+            banned_token_store,
         }
     }
 

@@ -22,6 +22,28 @@ async fn logout_works() {
 }
 
 #[tokio::test]
+async fn logout_should_ban_token() {
+    let app = TestApp::new().await;
+
+    // add cookie
+    let email = Email::new("rhi@artis.works").unwrap();
+    let cookie = auth::generate_auth_cookie(&email).unwrap();
+    let token = cookie.value();
+    app.cookies.add_cookie_str(
+        &format!("{cookie}; HttpOnly; SameSite=Lax; Secure; Path=/"),
+        &Url::parse("http://127.0.0.1").expect("Failed to parse URL"),
+    );
+
+    let response = app.post_logout().await;
+    assert_eq!(response.status().as_u16(), 200);
+
+    {
+        let banned_token_store = app.banned_token_store.read().await;
+        assert!(banned_token_store.is_banned(token).await.unwrap())
+    }
+}
+
+#[tokio::test]
 async fn logout_called_twice_does_not_work() {
     let app = TestApp::new().await;
 
