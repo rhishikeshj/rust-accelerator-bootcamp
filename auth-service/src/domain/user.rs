@@ -1,10 +1,26 @@
 use super::UserInfoError;
+use serde::de::{Error, Expected, Unexpected};
+use serde::{Deserialize, Deserializer};
 use validator::Validate;
 
-#[derive(Clone, PartialEq, Validate, Hash, Eq)]
+#[derive(Clone, PartialEq, Validate, Hash, Eq, Debug)]
 pub struct Email {
     #[validate(email)]
     e: String,
+}
+
+impl<'de> Deserialize<'de> for Email {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let email_str = String::deserialize(deserializer)?;
+        // Email::new(&email_str).map_err(|e| {
+        //     Error::invalid_value(Unexpected::Str(&format!("{e}")), &"Valid email expected")
+        // })
+
+        Email::new(&email_str).map_err(Error::custom)
+    }
 }
 
 impl Email {
@@ -27,7 +43,7 @@ impl AsRef<str> for Email {
     }
 }
 
-#[derive(Clone, PartialEq, Validate)]
+#[derive(Clone, PartialEq, Validate, Debug)]
 pub struct Password {
     #[validate(length(min = 8, max = 30))]
     p: String,
@@ -50,6 +66,16 @@ impl Password {
 impl AsRef<str> for Password {
     fn as_ref(&self) -> &str {
         &self.p
+    }
+}
+
+impl<'de> Deserialize<'de> for Password {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let e = String::deserialize(deserializer)?;
+        Password::new(&e).map_err(Error::custom)
     }
 }
 
