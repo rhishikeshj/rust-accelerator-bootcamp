@@ -2,8 +2,8 @@ use crate::{
     app_state::AppState,
     domain::{AuthAPIError, Email, Password, User, UserInfoError},
 };
+use axum::http::StatusCode;
 use axum::{extract::State, Json};
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]

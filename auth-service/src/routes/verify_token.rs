@@ -1,5 +1,5 @@
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use reqwest::StatusCode;
 
 pub async fn verify_token_handler() -> impl IntoResponse {
     StatusCode::OK.into_response()
