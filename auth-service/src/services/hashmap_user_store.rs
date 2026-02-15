@@ -92,7 +92,7 @@ mod tests {
             .await
             .is_err_and(|e| matches!(e, UserStoreError::UserNotFound)));
 
-        let _ = store
+        store
             .add_user(
                 User::new(
                     Email::new("rhi@artis.works").unwrap(),

@@ -1,5 +1,5 @@
 use super::UserInfoError;
-use serde::de::{Error, Expected, Unexpected};
+use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 use validator::Validate;
 
@@ -79,6 +79,7 @@ impl<'de> Deserialize<'de> for Password {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub struct User {
     pub email: Email,

@@ -1,4 +1,5 @@
 use crate::helpers::{self, TestApp};
+use auth_service::utils::constants::JWT_COOKIE_NAME;
 
 #[tokio::test]
 async fn login_works() {
@@ -28,6 +29,13 @@ async fn login_works() {
     let response = app.post_login(&test_case).await;
 
     assert_eq!(response.status().as_u16(), 200);
+
+    let auth_cookie = response
+        .cookies()
+        .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
+        .expect("No auth cookie found");
+
+    assert!(!auth_cookie.value().is_empty());
 }
 
 #[tokio::test]
