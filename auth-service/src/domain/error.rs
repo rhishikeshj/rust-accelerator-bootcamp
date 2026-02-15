@@ -5,6 +5,8 @@ pub enum AuthAPIError {
     InvalidCredentials,
     IncorrectCredentials,
     UnexpectedError,
+    MissingToken,
+    InvalidToken,
 }
 
 #[derive(Debug)]
