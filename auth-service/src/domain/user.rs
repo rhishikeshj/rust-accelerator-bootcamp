@@ -84,7 +84,7 @@ impl<'de> Deserialize<'de> for Password {
 pub struct User {
     pub email: Email,
     password: Password,
-    requires_2fa: bool,
+    pub requires_2fa: bool,
 }
 
 impl User {

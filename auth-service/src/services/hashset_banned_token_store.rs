@@ -1,6 +1,5 @@
+use crate::domain::{BannedTokenStore, TokenStoreError};
 use std::collections::HashSet;
-
-use super::banned_token_store::{BannedTokenStore, TokenStoreError};
 
 #[derive(Default)]
 pub struct HashsetBannedTokenStore {

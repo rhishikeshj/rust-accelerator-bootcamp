@@ -1,8 +1,4 @@
-use super::UserStore;
-use crate::{
-    domain::{Email, Password, User},
-    services::UserStoreError,
-};
+use crate::domain::{Email, Password, User, UserStore, UserStoreError};
 use std::collections::{hash_map::Entry, HashMap};
 
 #[derive(Default)]

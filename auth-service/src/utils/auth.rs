@@ -1,11 +1,10 @@
-use std::sync::Arc;
-
 use super::constants::{JWT_COOKIE_NAME, JWT_SECRET};
-use crate::{domain::Email, services::BannedTokenStore};
+use crate::domain::{BannedTokenStore, Email};
 use axum_extra::extract::cookie::{Cookie, SameSite};
 use chrono::Utc;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Validation};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tokio::sync::RwLock;
 
 #[derive(Debug, Serialize, Deserialize)]

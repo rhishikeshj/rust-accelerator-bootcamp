@@ -1,6 +1,6 @@
 use auth_service::{
-    app_state::AppState,
-    services::{BannedTokenStore, HashMapUserStore, HashsetBannedTokenStore},
+    app_state::{AppState, BannedTokenStoreType, TwoFACodeStoreType},
+    services::{HashMapUserStore, HashmapTwoFACodeStore, HashsetBannedTokenStore},
     utils::constants::test,
     Application,
 };
@@ -13,16 +13,19 @@ pub struct TestApp {
     pub address: String,
     pub http_client: reqwest::Client,
     pub cookies: Arc<Jar>,
-    pub banned_token_store: Arc<RwLock<dyn BannedTokenStore>>,
+    pub banned_token_store: BannedTokenStoreType,
+    pub two_fa_code_store: TwoFACodeStoreType,
 }
 
 impl TestApp {
     pub async fn new() -> Self {
         let user_store = HashMapUserStore::default();
         let banned_token_store = Arc::new(RwLock::new(HashsetBannedTokenStore::default()));
+        let two_fa_code_store = Arc::new(RwLock::new(HashmapTwoFACodeStore::default()));
         let app_state = AppState::new(
             Arc::new(RwLock::new(user_store)),
             banned_token_store.clone(),
+            two_fa_code_store.clone(),
         );
 
         let app = Application::build(app_state, test::APP_ADDRESS)
@@ -48,6 +51,7 @@ impl TestApp {
             address,
             http_client,
             banned_token_store,
+            two_fa_code_store,
         }
     }
 

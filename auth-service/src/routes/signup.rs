@@ -1,6 +1,6 @@
 use crate::{
     app_state::AppState,
-    domain::{AuthAPIError, Email, Password, User, UserInfoError},
+    domain::{AuthAPIError, Email, Password, User, UserInfoError, UserStoreError},
 };
 use axum::http::StatusCode;
 use axum::{extract::State, Json};
@@ -42,10 +42,10 @@ pub async fn signup_handler(
     })?;
 
     user_store.add_user(user).await.map_err(|e| match e {
-        crate::services::UserStoreError::UserAlreadyExists => AuthAPIError::UserAlreadyExists,
-        crate::services::UserStoreError::UserNotFound
-        | crate::services::UserStoreError::InvalidCredentials
-        | crate::services::UserStoreError::UnexpectedError => AuthAPIError::UnexpectedError,
+        UserStoreError::UserAlreadyExists => AuthAPIError::UserAlreadyExists,
+        UserStoreError::UserNotFound
+        | UserStoreError::InvalidCredentials
+        | UserStoreError::UnexpectedError => AuthAPIError::UnexpectedError,
     })?;
 
     Ok((
