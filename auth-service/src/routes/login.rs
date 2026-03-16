@@ -78,12 +78,25 @@ async fn handle_2fa(
     {
         let mut guard = state.two_fa_code_store.write().await;
         if let Err(e) = guard
-            .add_code(email.clone(), login_attempt_id.clone(), two_fa_code)
+            .add_code(email.clone(), login_attempt_id.clone(), two_fa_code.clone())
             .await
         {
             eprintln!("Error in storing 2fa code {e:?}");
             return (jar, Err(AuthAPIError::UnexpectedError));
         }
+    }
+
+    if let Err(e) = state
+        .email_client
+        .send_email(
+            &email,
+            "Your 2FA code for auth-service login",
+            &format!("Your 2FA code is {two_fa_code:?}"),
+        )
+        .await
+    {
+        eprintln!("Error in sending 2fa code {e:?}");
+        return (jar, Err(AuthAPIError::UnexpectedError));
     }
 
     // Finally, we need to return the login attempt ID to the client
