@@ -121,14 +121,14 @@ async fn should_return_206_if_valid_credentials_and_2fa_enabled() {
     assert_eq!(json_body.message, "2FA required".to_owned());
 
     let guard = app.two_fa_code_store.read().await;
-    let (stored_code, _) = guard
+    let (stored_login_attempt_id, _) = guard
         .get_code(&email)
         .await
         .expect("login attempt id not found in store");
 
     assert_eq!(
         json_body.login_attempt_id,
-        stored_code.as_ref().to_string(),
+        stored_login_attempt_id.as_ref().to_string(),
         "Login attempt id not stored"
     );
 }

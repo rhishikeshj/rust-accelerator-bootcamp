@@ -1,5 +1,7 @@
 use crate::domain::{Email, Password, User};
 use rand;
+use serde::de::Error;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, PartialEq)]
@@ -54,6 +56,25 @@ impl LoginAttemptId {
     }
 }
 
+impl Serialize for LoginAttemptId {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.0.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for LoginAttemptId {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        LoginAttemptId::parse(s).map_err(D::Error::custom)
+    }
+}
+
 impl Default for LoginAttemptId {
     fn default() -> Self {
         Self(Uuid::new_v4())
@@ -73,10 +94,29 @@ impl TwoFACode {
     pub fn parse(code: String) -> Result<Self, String> {
         let code_num = code.parse::<i32>();
         match code_num {
-            Ok(n) if n >= 100000 && n <= 999999 => Ok(Self(code)),
+            Ok(n) if (100000..=999999).contains(&n) => Ok(Self(code)),
             Ok(n) => Err(format!("Bad 2FA code {n}")),
             Err(e) => Err(format!("Cannot parse 2FA code {e:?}")),
         }
+    }
+}
+
+impl Serialize for TwoFACode {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.0.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for TwoFACode {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        TwoFACode::parse(s).map_err(D::Error::custom)
     }
 }
 

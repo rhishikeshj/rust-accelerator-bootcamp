@@ -57,6 +57,7 @@ pub async fn login_handler(
         Ok(user) => user,
         Err(_) => return (jar, Err(AuthAPIError::IncorrectCredentials)),
     };
+
     match user.requires_2fa {
         true => handle_2fa(&user.email, &state, jar).await,
         false => handle_no_2fa(&user.email, jar).await,
@@ -89,7 +90,7 @@ async fn handle_2fa(
     if let Err(e) = state
         .email_client
         .send_email(
-            &email,
+            email,
             "Your 2FA code for auth-service login",
             &format!("Your 2FA code is {two_fa_code:?}"),
         )
@@ -128,7 +129,7 @@ async fn handle_no_2fa(
         }
         Err(e) => {
             eprintln!("Error: {e:?}");
-            return (jar, Err(AuthAPIError::UnexpectedError));
+            (jar, Err(AuthAPIError::UnexpectedError))
         }
     }
 }

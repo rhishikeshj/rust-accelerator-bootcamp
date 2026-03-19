@@ -14,15 +14,12 @@ impl TwoFACodeStore for HashmapTwoFACodeStore {
         login_attempt_id: LoginAttemptId,
         code: TwoFACode,
     ) -> Result<(), TwoFACodeStoreError> {
-        if let Some(_v) = self.codes.insert(email, (login_attempt_id, code)) {
-            Err(TwoFACodeStoreError::UnexpectedError)
-        } else {
-            Ok(())
-        }
+        self.codes.insert(email, (login_attempt_id, code));
+        Ok(())
     }
 
     async fn remove_code(&mut self, email: &Email) -> Result<(), TwoFACodeStoreError> {
-        if let None = self.codes.remove(email) {
+        if self.codes.remove(email).is_none() {
             Err(TwoFACodeStoreError::LoginAttemptIdNotFound)
         } else {
             Ok(())
